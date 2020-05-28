@@ -55,6 +55,7 @@ class Game extends React.Component {
         squares: Array(9).fill(null),
         location: null,
       }],
+      historyOrderDesc: false,
       stepNumber: 0,
       xIsNext: true,
     }
@@ -85,24 +86,39 @@ class Game extends React.Component {
     });
   }
 
-  render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+  renderHistory() {
+    let moves = this.state.history.map((step, idx) => {
+      return ({
+        step: step,
+        stepNumber: idx,
+      });
+    });
+    if (this.state.historyOrderDesc) {
+      moves.reverse();
+    }
 
-    const moves = history.map((step, move) => {
-      let desc = move ?
-        `Go to move #${move} (${Math.trunc(step.location / 3)}, ${step.location % 3})` :
+    return moves.map((move) => {
+      const step = move.step;
+      const stepNumber = move.stepNumber;
+
+      let desc = stepNumber ?
+        `Go to move #${stepNumber} (${Math.trunc(step.location / 3)}, ${step.location % 3})` :
         'Go to game start';
-      if (move === this.state.stepNumber) {
-        desc = <b>{desc}</b>
+      if (stepNumber === this.state.stepNumber) {
+        desc = <b>{desc}</b>;
       }
+
       return (
-        <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        <li key={stepNumber}>
+          <button onClick={() => this.jumpTo(stepNumber)}>{desc}</button>
         </li>
       );
     });
+  }
+
+  render() {
+    const current = this.state.history[this.state.stepNumber];
+    const winner = calculateWinner(current.squares);
 
     let status;
     if (winner) {
@@ -121,7 +137,14 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{moves}</ol>
+          <ol>{this.renderHistory()}</ol>
+          <div>
+            <button
+              onClick={() => this.setState({historyOrderDesc: !this.state.historyOrderDesc})}
+            >
+              Reverse the history order
+            </button>
+          </div>
         </div>
       </div>
     );
