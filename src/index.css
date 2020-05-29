@@ -36,6 +36,10 @@ ol, ul {
   outline: none;
 }
 
+.square-hilight {
+  background: #f0f;
+}
+
 .kbd-navigation .square:focus {
   background: #ddd;
 }
