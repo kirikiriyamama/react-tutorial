@@ -25,8 +25,8 @@ class Board extends React.Component {
     return (
       <Square
         key={i}
-        value={this.props.squares[i].value}
-        hilight={this.props.squares[i].hilight}
+        value={this.props.squares[i]}
+        hilight={this.props.hilightLocations.includes(i)}
         onClick={() => this.props.onClick(i)}
       />
     );
@@ -60,12 +60,7 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [{
-        squares: Array(9).fill().map(() => {
-          return ({
-            value: null,
-            hilight: false,
-          });
-        }),
+        squares: Array(9).fill(null),
         location: null,
       }],
       historyOrderDesc: false,
@@ -77,24 +72,14 @@ class Game extends React.Component {
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
-    const squares = current.squares.map((s) => Object.assign({}, s));
+    const squares = current.squares.slice();
 
-    const [winner,] = calculateWinner(squares.map((s) => s.value));
-    if (winner || squares[i].value) {
+    const [winner,] = calculateWinner(squares);
+    if (winner || squares[i]) {
       return;
     }
 
-    squares[i] = {
-      value: this.state.xIsNext ? 'X' : 'O',
-      hilight: false,
-    };
-    const [, line] = calculateWinner(squares.map((s) => s.value));
-    if (line) {
-      for (let i = 0; i < line.length; i++) {
-        squares[line[i]].hilight = true
-      }
-    }
-
+    squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
       history: history.concat([{
         squares: squares,
@@ -144,7 +129,7 @@ class Game extends React.Component {
 
   render() {
     const current = this.state.history[this.state.stepNumber];
-    const [winner,] = calculateWinner(current.squares.map((s) => s.value));
+    const [winner, line] = calculateWinner(current.squares);
 
     let status;
     if (winner) {
@@ -158,6 +143,7 @@ class Game extends React.Component {
         <div className="game-board">
           <Board
             squares={current.squares}
+            hilightLocations={line}
             onClick={(i) => this.handleClick(i)}
           />
         </div>
